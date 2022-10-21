@@ -2,6 +2,7 @@
 use App\Post;
 use Illuminate\Database\Seeder;
 use Faker\Generator as Faker;
+use Illuminate\Support\str;
 class PostSeeder extends Seeder
 {
     /**
@@ -15,7 +16,7 @@ class PostSeeder extends Seeder
             $post = new Post();
             $post->title = $faker->words(rand(5, 10), true);
             $post->content = $faker->paragraphs(rand(10, 20), true);
-            $post->slug = str_replace(' ', '-', $post->title);
+            $post->slug = Str::slug($post->title);
 
             $post->save();
         }

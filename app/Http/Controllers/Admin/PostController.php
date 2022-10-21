@@ -6,6 +6,7 @@ use App\Category;
 use App\Http\Controllers\Controller;
 use App\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
@@ -16,7 +17,7 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = Post::limit(50)->get();
+        $posts = Post::orderBy('created_at','desc')->limit(50)->get();
         return view('admin.posts.index', compact('posts'));
     }
 
@@ -27,8 +28,8 @@ class PostController extends Controller
      */
     public function create()
     {
-        $categories = Category::all();
-        return view('admin.posts.create',compact('categories'));
+        $categories = Category::orderBy('name', 'asc')->get();
+        return view('admin.posts.create', compact('categories'));
     }
 
     /**
@@ -42,9 +43,12 @@ class PostController extends Controller
         $params = $request->validate([
             'title' => 'required|max:255|min:5',
             'content' => 'required',
+            'category_id' => 'nullable|exists:categories,id',
         ]);
+        // $slug= Str::slug($params['title']);
 
-        $params['slug'] = str_replace(' ', '-', $params['title']);
+
+        $params['slug'] = Post::getUniqueSlugFromTitle($params['title']);
         $post = Post::create($params);
         return redirect()->route('admin.posts.show', $post);
     }
@@ -68,8 +72,8 @@ class PostController extends Controller
      */
     public function edit(Post $post)
     {
-        $posts = Post::findOrFail($id);
-        return view('admin.posts.edit',compact('posts'));
+        $categories = Category::orderBy('name', 'asc')->get();
+        return view('admin.posts.edit', compact('categories', 'post'));
     }
 
     /**
@@ -81,7 +85,19 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
-        //
+        $params = $request->validate([
+            'title' => 'required|max:255|min:5',
+            'content' => 'required',
+            'category_id' => 'nullable|exists:categories,id'
+        ]);
+
+        if ($params['title'] !== $post->title) {
+            $params['slug'] = Post::getUniqueSlugFrom($params['title']);
+        }
+
+        $post->update($params);
+
+        return redirect()->route('admin.posts.show', $post);
     }
 
     /**

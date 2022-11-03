@@ -44,6 +44,7 @@ class PostController extends Controller
             'title' => 'required|max:255|min:5',
             'content' => 'required',
             'category_id' => 'nullable|exists:categories,id',
+            'image' =>''
         ]);
         // $slug= Str::slug($params['title']);
 
